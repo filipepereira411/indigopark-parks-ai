@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Indigo Park – Site de fãs</title>
+<style>
+:root{--bg:#f4f1ff;--fg:#241a4a;--ac:#5b3fd1;--pn:#fff;--bd:#d6cdf7;--mu:#6b5fa0;--hd:#241a4a;--ok:#1f8a4c;--er:#c4264a;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#120d26;--fg:#e8e2ff;--ac:#a38dff;--pn:#1d1540;--bd:#3a2c75;--mu:#a99ddb;--hd:#0b0818;--ok:#6dff9e;--er:#ff7a96;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#120d26;--fg:#e8e2ff;--ac:#a38dff;--pn:#1d1540;--bd:#3a2c75;--mu:#a99ddb;--hd:#0b0818;--ok:#6dff9e;--er:#ff7a96;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Trebuchet MS","Segoe UI",sans-serif;line-height:1.6}
+header{background:var(--hd);color:#e8e2ff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;justify-content:space-between}
+.logo{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:1.8rem;color:#b9a8ff;text-decoration:none;letter-spacing:.03em}
+nav{display:flex;flex-wrap:wrap;gap:4px 16px}
+nav a{color:#e8e2ff;text-decoration:none;padding:4px 2px;border-bottom:2px solid transparent}
+nav a.on,nav a:hover{border-color:#b9a8ff}
+#auth{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.92rem}
+button,.btn{font:inherit;font-weight:700;background:var(--ac);color:#fff;border:0;border-radius:8px;padding:8px 16px;cursor:pointer;text-decoration:none;display:inline-block}
+:root:not([data-theme="light"]) button,:root:not([data-theme="light"]) .btn{color:#120d26}
+button.g{background:transparent;color:inherit;border:1.5px solid currentColor}
+button.d{background:var(--er);color:#fff}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+main{max-width:860px;margin:0 auto;padding:24px 16px 48px}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.2}
+h1{font-size:2.3rem;margin:.2em 0}
+.hero{padding:28px 0 18px}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.mu{color:var(--mu);font-size:.9rem}
+[contenteditable]{outline:2px dashed var(--ac);outline-offset:3px;border-radius:4px;cursor:text}
+.bar{background:var(--pn);border:1px solid var(--ac);border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+dialog{border:1px solid var(--bd);border-radius:14px;background:var(--pn);color:var(--fg);width:min(92vw,380px);padding:22px}
+dialog::backdrop{background:rgba(10,6,28,.7)}
+label{display:block;font-weight:700;margin:12px 0 4px}
+input,textarea{font:inherit;width:100%;padding:9px 11px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg);color:var(--fg)}
+.er{color:var(--er);min-height:1.4em;margin:8px 0 0}
+.lk{background:none;border:0;padding:0;color:var(--ac);text-decoration:underline;font-weight:400}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--hd);color:#e8e2ff;padding:10px 18px;border-radius:10px;max-width:90vw;z-index:20;border:1px solid #b9a8ff}
+footer{text-align:center;padding:18px;color:var(--mu);font-size:.85rem}
+table{width:100%;border-collapse:collapse}td,th{padding:6px 8px;border-bottom:1px solid var(--bd);text-align:left}
+</style>
+</head>
+<body>
+<header>
+<a class="logo" href="#inicio">Indigo Park</a>
+<nav id="nav"></nav>
+<div id="auth"></div>
+</header>
+<main id="view"></main>
+<footer>Site de fãs não oficial. Indigo Park e os seus personagens pertencem aos seus criadores.</footer>
+<dialog id="dlg"></dialog>
+<div id="toast" hidden></div>
+<script>
+const mem={};
+const S={get(k){try{return localStorage.getItem(k)}catch(e){return mem[k]??null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){mem[k]=v}},del(k){try{localStorage.removeItem(k)}catch(e){delete mem[k]}}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const DEF={heroT:"Bem-vindo ao Indigo Park",heroP:"O parque temático que prometia diversão para todos. Explora o parque, conhece as mascotes e acompanha as novidades neste site de fãs.",parT:"O parque",parP:"Indigo Park é um jogo de terror em que exploras um parque de diversões abandonado, resolves puzzles e foges de mascotes que não são o que parecem. O Capítulo 1 está disponível gratuitamente no Steam e o Capítulo 2, financiado no Kickstarter, está previsto para 2026.",
+chars:[{n:"Bino",d:"A lebre guia do parque. Simpática à entrada, mas a sua paciência tem limites."},{n:"Mira",d:"A coruja da bilheteira. Conhece todos os segredos do parque e cobra caro por eles."},{n:"Tito",d:"O robô do carrossel. Gira há anos sem parar e já ninguém sabe quem o desligou."}],
+news:[{t:"Site de fãs aberto",d:"Abrimos as portas. Passa pela página Jogar para fugir do parque com a nossa versão em HTML."},{t:"Capítulo 2 a caminho",d:"A continuação oficial promete aquários e laboratórios escondidos, com lançamento previsto para 2026."}]};
+let C;try{C=JSON.parse(S.get('ip_c'))}catch(e){}if(!C||!C.chars)C=JSON.parse(JSON.stringify(DEF));
+const saveC=()=>S.set('ip_c',JSON.stringify(C));
+async function H(u,p){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('indigo|'+u.toLowerCase()+'|'+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+let U;try{U=JSON.parse(S.get('ip_u'))}catch(e){}
+const saveU=()=>S.set('ip_u',JSON.stringify(U));
+let me=null;try{me=sessionStorage.getItem('ip_s')}catch(e){}
+let edit=false,reset=null,tt;
+const isAdm=()=>me&&U&&U[me]&&U[me].role==='admin';
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,5000)}
+async function init(){if(!U||!U.admin){U=U||{};U.admin={h:await H('admin','admin'),role:'admin',email:'admin@indigo.park'};saveU()}if(me&&!U[me])me=null;R()}
+function setSess(v){me=v;try{v?sessionStorage.setItem('ip_s',v):sessionStorage.removeItem('ip_s')}catch(e){}}
+function F(k,v,tag='p'){return `<${tag} data-k="${k}"${edit?' contenteditable="true"':''}>${esc(v)}</${tag}>`}
+const pages={inicio:'Início',parque:'O parque',personagens:'Mascotes',noticias:'Notícias',jogar:'Jogar'};
+function R(){
+ const p=(location.hash||'#inicio').slice(1);const pg=pages[p]||p==='conta'?p:'inicio';
+ $('#nav').innerHTML=Object.entries(pages).map(([k,v])=>`<a href="#${k}"${k===pg?' class="on"':''}>${v}</a>`).join('');
+ $('#auth').innerHTML=me?`<span>Olá, <b>${esc(me)}</b></span><a class="btn g" style="background:transparent;border:1.5px solid currentColor;color:inherit" href="#conta">Conta</a><button class="g" id="out">Sair</button>`:`<button id="in">Entrar</button><button class="g" id="reg">Criar conta</button>`;
+ if(me){$('#out').onclick=()=>{setSess(null);edit=false;toast('Sessão terminada.');R()}}else{$('#in').onclick=()=>dlg('login');$('#reg').onclick=()=>dlg('reg')}
+ let h='';
+ if(isAdm()&&pg!=='conta')h+=`<div class="bar"><b>Admin</b><button id="ed">${edit?'Terminar edição':'Editar conteúdo'}</button>${edit?'<span class="mu">Clica nos textos para os alterar. As alterações guardam-se sozinhas.</span><button class="g" id="rs" style="color:var(--er)">Repor original</button>':''}</div>`;
+ if(pg==='inicio')h+=`<section class="hero">${F('heroT',C.heroT,'h1')}${F('heroP',C.heroP)}<a class="btn" href="#jogar">Jogar agora</a></section><h2>Últimas notícias</h2>${C.news.slice(0,2).map((n,i)=>newsCard(n,i)).join('')}`;
+ else if(pg==='parque')h+=`${F('parT',C.parT,'h1')}${F('parP',C.parP)}`;
+ else if(pg==='personagens')h+=`<h1>Mascotes</h1><p class="mu">Mascotes originais criadas para este site de fãs.</p><div class="grid">${C.chars.map((c,i)=>`<div class="card">${F('c'+i+'n',c.n,'h3')}${F('c'+i+'d',c.d)}</div>`).join('')}</div>`;
+ else if(pg==='noticias')h+=`<h1>Notícias</h1>${isAdm()&&edit?'<button id="addn">Adicionar notícia</button>':''}${C.news.map((n,i)=>newsCard(n,i,true)).join('')||'<p class="mu">Ainda não há notícias.</p>'}`;
+ else if(pg==='jogar')h+=`<h1>Jogar</h1><p>Entra no parque às escuras com a lanterna, recolhe 5 fichas, ativa a alavanca e foge pelo portão. Bino anda por aí.</p><a class="btn" href="indigopark.html">Abrir o jogo</a>`;
+ else if(pg==='conta')h+=contaHTML();
+ $('#view').innerHTML=h;
+ if(isAdm()&&pg!=='conta'){$('#ed').onclick=()=>{edit=!edit;R()};if(edit){$('#rs').onclick=()=>{if(confirm('Repor todo o conteúdo original?')){C=JSON.parse(JSON.stringify(DEF));saveC();R();toast('Conteúdo reposto.')}};
+  document.querySelectorAll('[data-k]').forEach(el=>el.oninput=()=>{setK(el.dataset.k,el.textContent);saveC()});
+  const a=$('#addn');if(a)a.onclick=()=>{C.news.unshift({t:'Nova notícia',d:'Escreve aqui o texto.'});saveC();R()};
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{C.news.splice(+b.dataset.del,1);saveC();R()})}}
+ if(pg==='conta')bindConta();
+}
+function newsCard(n,i,del){return `<article class="card">${F('n'+i+'t',n.t,'h3')}${F('n'+i+'d',n.d)}${del&&edit?`<button class="d" data-del="${i}">Apagar</button>`:''}</article>`}
+function setK(k,v){let m;if(m=k.match(/^c(\d)(n|d)$/))C.chars[m[1]][m[2]]=v;else if(m=k.match(/^n(\d+)(t|d)$/))C.news[m[1]][m[2]]=v;else C[k]=v}
+function contaHTML(){
+ if(!me)return `<h1>Conta</h1><p>Entra para veres a tua conta.</p>`;
+ let h=`<h1>A tua conta</h1><div class="card"><p>Utilizador: <b>${esc(me)}</b> (${U[me].role==='admin'?'administrador':'membro'})<br><span class="mu">${esc(U[me].email||'')}</span></p><h3>Mudar senha</h3><form id="cp"><label for="o">Senha atual</label><input id="o" type="password" autocomplete="current-password"><label for="n1">Nova senha (mín. 6 caracteres)</label><input id="n1" type="password" autocomplete="new-password"><button style="margin-top:14px">Guardar senha</button><p class="er" id="cpe" role="alert"></p></form></div>`;
+ if(isAdm())h+=`<div class="card"><h3>Utilizadores</h3><table><tr><th>Nome</th><th>Função</th><th></th></tr>${Object.keys(U).map(u=>`<tr><td>${esc(u)}</td><td>${U[u].role}</td><td>${u==='admin'?'':`<button class="d" data-u="${esc(u)}">Remover</button>`}</td></tr>`).join('')}</table><p class="mu">Aviso: este login é uma demonstração no navegador. As contas e edições ficam guardadas só neste dispositivo e não são seguras. Muda a senha do admin se fores usar isto a sério.</p></div>`;
+ return h}
+function bindConta(){const f=$('#cp');if(!f)return;
+ f.onsubmit=async e=>{e.preventDefault();const o=$('#o').value,n=$('#n1').value,er=$('#cpe');
+  if(U[me].h!==await H(me,o)){er.textContent='A senha atual está errada.';return}
+  if(n.length<6){er.textContent='A nova senha precisa de pelo menos 6 caracteres.';return}
+  U[me].h=await H(me,n);saveU();f.reset();er.textContent='';toast('Senha alterada.')};
+ document.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{if(confirm('Remover '+b.dataset.u+'?')){delete U[b.dataset.u];saveU();R()}})}
+const D=$('#dlg');
+function dlg(w){
+ const x=(t,b,f)=>{D.innerHTML=`<h2 style="margin-top:0">${t}</h2><form id="df">${b}<p class="er" id="de" role="alert"></p></form><button class="lk" id="cl" style="margin-top:6px">Fechar</button>`;$('#cl').onclick=()=>D.close();$('#df').onsubmit=async e=>{e.preventDefault();try{await f()}catch(err){$('#de').textContent='Algo correu mal. Tenta de novo.'}};if(!D.open)D.showModal()};
+ const er=m=>{$('#de').textContent=m};const v=id=>$('#'+id).value;
+ if(w==='login')x('Entrar',`<label for="u">Utilizador</label><input id="u" autocomplete="username" required><label for="p">Senha</label><input id="p" type="password" autocomplete="current-password" required><button style="margin-top:14px;width:100%">Entrar</button><p style="margin:12px 0 0"><button type="button" class="lk" id="fg">Esqueci a senha</button> · <button type="button" class="lk" id="nr">Criar conta</button></p>`,async()=>{
+  const u=v('u').trim().toLowerCase();if(U[u]&&U[u].h===await H(u,v('p'))){setSess(u);D.close();toast('Sessão iniciada.');R()}else er('Utilizador ou senha incorretos.')});
+ if(w==='login'){$('#fg').onclick=()=>dlg('fg');$('#nr').onclick=()=>dlg('reg')}
+ if(w==='reg'){x('Criar conta',`<label for="u">Utilizador (letras, números e _)</label><input id="u" autocomplete="username" required><label for="e">Email</label><input id="e" type="email" autocomplete="email" required><label for="p">Senha (mín. 6 caracteres)</label><input id="p" type="password" autocomplete="new-password" required><button style="margin-top:14px;width:100%">Criar conta</button><p style="margin:12px 0 0"><button type="button" class="lk" id="nl">Já tenho conta</button></p>`,async()=>{
+  const u=v('u').trim().toLowerCase();if(!/^[a-z0-9_]{3,20}$/.test(u))return er('Utilizador: 3 a 20 letras, números ou _.');if(U[u])return er('Esse utilizador já existe.');if(v('p').length<6)return er('A senha precisa de pelo menos 6 caracteres.');
+  U[u]={h:await H(u,v('p')),role:'membro',email:v('e').trim()};saveU();setSess(u);D.close();toast('Conta criada. Bem-vindo, '+u+'!');R()});$('#nl').onclick=()=>dlg('login')}
+ if(w==='fg')x('Esqueci a senha',`<p class="mu">Indica o teu utilizador. Vamos gerar um código de recuperação.</p><label for="u">Utilizador</label><input id="u" required><button style="margin-top:14px;width:100%">Gerar código</button><p style="margin:12px 0 0"><button type="button" class="lk" id="bk">Voltar</button></p>`,async()=>{
+  const u=v('u').trim().toLowerCase();if(!U[u])return er('Não existe nenhum utilizador com esse nome.');
+  reset={u,code:String(Math.floor(100000+Math.random()*900000)),exp:Date.now()+600000,tries:0};dlg('rs');toast('Código de recuperação (demonstração): '+reset.code+'. Num site real iria por email.')});
+ if(w==='fg')$('#bk').onclick=()=>dlg('login');
+ if(w==='rs')x('Nova senha',`<p class="mu">Escreve o código que recebeste (válido 10 minutos) e a nova senha.</p><label for="c">Código</label><input id="c" inputmode="numeric" autocomplete="one-time-code" required><label for="p">Nova senha (mín. 6 caracteres)</label><input id="p" type="password" autocomplete="new-password" required><button style="margin-top:14px;width:100%">Mudar senha</button>`,async()=>{
+  if(!reset||Date.now()>reset.exp){reset=null;return er('O código expirou. Pede um novo.')}
+  if(++reset.tries>5){reset=null;return er('Demasiadas tentativas. Pede um novo código.')}
+  if(v('c').trim()!==reset.code)return er('Código incorreto.');if(v('p').length<6)return er('A senha precisa de pelo menos 6 caracteres.');
+  U[reset.u].h=await H(reset.u,v('p'));saveU();reset=null;dlg('login');toast('Senha alterada. Já podes entrar.')});
+}
+addEventListener('hashchange',()=>{R();scrollTo(0,0)});
+init();
+</script>
+</body>
+</html>
